@@ -31,7 +31,7 @@ internal struct VersionInfo
     /// </summary>
     public IImmutableSet<int> IgnoreVersion { get; set; }
 
-    public string FormatMethodName(string name, int version)
+    public string FormatNameWithVersion(string name, int version)
     {
         string versionSuffix = VersionNaming switch
         {

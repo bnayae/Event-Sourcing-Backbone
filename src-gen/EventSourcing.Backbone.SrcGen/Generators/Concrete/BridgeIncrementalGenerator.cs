@@ -25,17 +25,19 @@ namespace EventSourcing.Backbone
                             SourceProductionContext context,
                             Compilation compilation,
                             SyntaxReceiverResult info,
-                            string[] usingStatements)
+                            string[] usingStatements,
+                            int? versionOfSubInterface = null)
         {
             string interfaceName = info.FormatName();
             var builder = new StringBuilder();
 
+
             if (info.Kind == "Producer")
             {
-                var file = OnGenerateProducer(compilation, builder, info, interfaceName, usingStatements);
+                var file = OnGenerateProducer(compilation, builder, info, interfaceName, usingStatements, versionOfSubInterface);
                 return new[] { new GenInstruction(file, builder.ToString()) };
             }
-            return OnGenerateConsumers(compilation, info, interfaceName, usingStatements);
+            return OnGenerateConsumers(compilation, info, interfaceName, usingStatements, versionOfSubInterface);
 
         }
 
@@ -47,7 +49,8 @@ namespace EventSourcing.Backbone
                             Compilation compilation,
                             SyntaxReceiverResult info,
                             string interfaceName,
-                            string[] usingStatements)
+                            string[] usingStatements,
+                            int? versionOfSubInterface = null)
         {
             string generateFrom = info.FormatName();
             string prefix = (info.Name ?? interfaceName).StartsWith("I") &&
@@ -220,7 +223,7 @@ namespace EventSourcing.Backbone
                         continue;
 
                     string mtdName = method.ToNameConvention();
-                    string nameVersion = versionInfo.FormatMethodName(mtdName, opVersionInfo.Version);
+                    string nameVersion = versionInfo.FormatNameWithVersion(mtdName, opVersionInfo.Version);
                     string nameOfOperetion = mtdName;
 
                     //string mtdType = method.ContainingType.Name;
@@ -353,7 +356,8 @@ namespace EventSourcing.Backbone
                             StringBuilder builder,
                             SyntaxReceiverResult info,
                             string interfaceName,
-                            string[] usingStatements)
+                            string[] usingStatements,
+                            int? versionOfSubInterface = null)
         {
             var symbol = info.Symbol;
             var kind = info.Kind;
@@ -418,6 +422,10 @@ namespace EventSourcing.Backbone
 
             builder.AppendLine("\t}");
 
+            fileName = versionOfSubInterface == null
+                            ? fileName
+                            : versionInfo.FormatNameWithVersion(fileName, versionOfSubInterface ?? -1);
+
             return fileName;
         }
 
@@ -433,7 +441,7 @@ namespace EventSourcing.Backbone
                             OperationVersionInfo opVersionInfo)
         {
             string mtdName = mds.ToNameConvention();
-            string nameVersion = versionInfo.FormatMethodName(mtdName, opVersionInfo.Version);
+            string nameVersion = versionInfo.FormatNameWithVersion(mtdName, opVersionInfo.Version);
             string interfaceName = mds.ContainingType.Name;
             string interfaceNameFormatted = info.FormatName(interfaceName);
             builder.Append("\t\tasync ValueTask");

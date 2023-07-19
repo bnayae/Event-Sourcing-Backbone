@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
+using EventSourcing.Backbone.SrcGen.Entities;
 using EventSourcing.Backbone.SrcGen.Generators.Entities;
 
 using Microsoft.CodeAnalysis;
@@ -147,9 +149,10 @@ namespace EventSourcing.Backbone
         public void GenerateSingle(
                             SourceProductionContext context,
                             Compilation compilation,
-                            SyntaxReceiverResult info)
+                            SyntaxReceiverResult info,
+                            int? versionOfSubInterface = null)
         {
-            var (item, symbol, kind, ns, usingStatements) = info;
+            var (item, att, symbol, kind, ns, usingStatements) = info;
 
             #region Validation
 
@@ -161,7 +164,14 @@ namespace EventSourcing.Backbone
 
             #endregion // Validation
 
-            GenInstruction[] codes = OnGenerate(context, compilation, info, usingStatements);
+            var versionInfo = att.GetVersionInfo(compilation, kind);
+            if (versionOfSubInterface != null && (versionInfo.MinVersion > versionOfSubInterface ||
+                                                    versionInfo.IgnoreVersion.Contains(versionOfSubInterface ?? -1)))
+            {
+                return;
+            }
+
+            GenInstruction[] codes = OnGenerate(context, compilation, info, usingStatements, versionOfSubInterface);
 
             foreach (var (fileName, content, dynamicNs, usn) in codes)
             {
@@ -187,7 +197,13 @@ namespace EventSourcing.Backbone
                 builder.AppendLine(content);
                 builder.AppendLine("}");
 
-                context.AddSource($"{fileName}.{kind}.cs", builder.ToString());
+                var fName = versionOfSubInterface == null
+                            ? fileName
+                            : versionInfo.FormatNameWithVersion(fileName, versionOfSubInterface ?? -1);
+                if(versionOfSubInterface == null)
+                    context.AddSource($"{fName}.{kind}.cs", builder.ToString());
+                else
+                    context.AddSource($"{fName}.{kind}.{versionOfSubInterface}.cs", builder.ToString());
             }
         }
 
@@ -202,6 +218,7 @@ namespace EventSourcing.Backbone
         /// <param name="compilation">The compilation.</param>
         /// <param name="info">The information.</param>
         /// <param name="usingStatements">The using statements.</param>
+        /// <param name="versionOfSubInterface">The version of sub interface.</param>
         /// <returns>
         /// File name
         /// </returns>
@@ -209,7 +226,8 @@ namespace EventSourcing.Backbone
                             SourceProductionContext context,
                             Compilation compilation,
                             SyntaxReceiverResult info,
-                            string[] usingStatements);
+                            string[] usingStatements,
+                            int? versionOfSubInterface = null);
 
         #endregion // OnGenerate
 
