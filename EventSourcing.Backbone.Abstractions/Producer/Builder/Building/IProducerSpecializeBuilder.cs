@@ -27,14 +27,6 @@
         /// Enable dynamic transformation of the stream id before sending.
         /// Can use for scenario like routing between environment like dev vs. prod or aws vs azure.
         /// </summary>
-        [Obsolete("Deprecated, Use Specialize", false)]
-        IProducerOverrideBuilder<T> Override<T>()
-            where T : class;
-
-        /// <summary>
-        /// Enable dynamic transformation of the stream id before sending.
-        /// Can use for scenario like routing between environment like dev vs. prod or aws vs azure.
-        /// </summary>
         IProducerOverrideBuilder<T> Specialize<T>()
             where T : class;
     }
