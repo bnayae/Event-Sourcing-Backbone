@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+    <Compile Remove="contracts\**" />
+    <EmbeddedResource Remove="contracts\**" />
+    <None Remove="contracts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Producers\EventSourcing.Backbone.Producers\EventSourcing.Backbone.Producers.csproj" />
+    <ProjectReference Include="..\EventSourcing.Backbone.Channels.PulsarProvider.Common\EventSourcing.Backbone.Channels.PulsarProvider.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="OpenTelemetry" Version="1.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+  </ItemGroup>
+
+</Project>
